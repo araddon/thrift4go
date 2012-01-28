@@ -22,6 +22,7 @@ package thrift
 import (
   "net"
   "bytes"
+  "time"
 )
 
 /**
@@ -91,7 +92,8 @@ func NewTSocket(address net.Addr, nsecTimeout int64) *TSocket {
 func (p *TSocket) SetTimeout(nsecTimeout int64) error {
   p.nsecTimeout = nsecTimeout
   if p.IsOpen() {
-    if err := p.conn.SetTimeout(nsecTimeout); err != nil {
+    dl := time.Now().Add(time.Duration(nsecTimeout) * time.Nanosecond)
+    if err := p.conn.SetDeadline(dl); err != nil {
       LOGGER.Print("Could not set socket timeout.", err)
       return err
     }
@@ -138,7 +140,8 @@ func (p *TSocket) Open() error {
     return NewTTransportException(NOT_OPEN, err.Error())
   }
   if p.conn != nil {
-    p.conn.SetTimeout(p.nsecTimeout)
+    dl := time.Now().Add(time.Duration(p.nsecTimeout) * time.Nanosecond)
+    p.conn.SetDeadline(dl)
   }
   return nil
 }

@@ -21,6 +21,7 @@ package thrift
 
 import (
   "net"
+  "time"
 )
 
 /**
@@ -140,7 +141,8 @@ func (p *TNonblockingServerSocket) Accept() (TTransport, error) {
   if err != nil {
     return nil, NewTTransportExceptionFromOsError(err)
   }
-  conn.SetTimeout(p.nsecTimeout)
+  dl := time.Now().Add(time.Duration(p.nsecTimeout) * time.Nanosecond)
+  conn.SetDeadline(dl)
   return NewTSocketConn(conn)
 }
 

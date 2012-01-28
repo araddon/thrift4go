@@ -21,6 +21,7 @@ package thrift
 
 import (
   "net"
+  "time"
 )
 
 
@@ -72,7 +73,8 @@ func NewTServerSocketConn(conn net.Conn) *TServerSocket {
 
 func NewTServerSocketConnTimeout(conn net.Conn, nsecClientTimeout int64) *TServerSocket {
   v := &TServerSocket{conn: conn, addr: conn.LocalAddr(), nsecClientTimeout: nsecClientTimeout}
-  conn.SetTimeout(nsecClientTimeout)
+  dl := time.Now().Add(time.Duration(nsecClientTimeout) * time.Nanosecond)
+  conn.SetDeadline(dl)
   return v
 }
 
@@ -107,7 +109,8 @@ func (p *TServerSocket) Accept() (TTransport, error) {
   if err != nil {
     return nil, NewTTransportExceptionFromOsError(err)
   }
-  conn.SetTimeout(p.nsecClientTimeout)
+  dl := time.Now().Add(time.Duration(p.nsecClientTimeout) * time.Nanosecond)
+  conn.SetDeadline(dl)
   return NewTSocketConn(conn)
 }
 
